@@ -1,0 +1,128 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ---------- User Model ----------
+model User {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String   @unique
+  password    String   // Hashed password
+  phone       String
+  role        String   // "student" | "shopkeeper" | "admin"
+  college     String?  // Optional student college
+  totalOrders Int      @default(0)
+  totalSpent  Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  shops       Shop[]   @relation("OwnerShops")
+}
+
+// ---------- Shop Model ----------
+model Shop {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  name                 String
+  address              String
+  phone                String
+  ownerId              String   @db.ObjectId
+  ownerName            String
+  rating               Float    @default(4.5)
+  totalRatings         Int      @default(0)
+  status               String   @default("closed") // "open" | "closed" | "busy"
+  queueLength          Int      @default(0)
+  estimatedWaitMinutes Int      @default(0)
+  operatingHoursOpen   String   @default("09:00")
+  operatingHoursClose  String   @default("21:00")
+  pricePerPageBW       Float    @default(3.0)
+  pricePerPageColor    Float    @default(10.0)
+  bindingPrice         Float    @default(25.0)
+  spiralPrice          Float    @default(30.0)
+  laminationPrice      Float    @default(20.0)
+  staplePrice          Float    @default(5.0)
+  bondPaperPrice       Float    @default(5.0)
+  isVerified           Boolean  @default(false)
+  totalRevenue         Float    @default(0.0)
+  totalOrders          Int      @default(0)
+  commission           Float    @default(0.0)
+  disabledServices     String[]
+  customServices       CustomService[]
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relations
+  owner                User     @relation("OwnerShops", fields: [ownerId], references: [id])
+}
+
+// ---------- Custom Service Type ----------
+type CustomService {
+  id    String
+  name  String
+  price Float
+}
+
+// ---------- Selected Service Type ----------
+type SelectedService {
+  id    String
+  name  String
+  price Float
+}
+
+// ---------- Print Options Composite Type ----------
+type PrintOptions {
+  color          String  // "bw" | "color" | "mixed"
+  side           String  // "single" | "double"
+  copies         Int     @default(1)
+  copiesBW       Int     @default(1)
+  copiesColor    Int     @default(0)
+  pageRange      String  @default("all")
+  paperSize      String  @default("A4") // "A4" | "A3"
+  orientation    String  @default("portrait") // "portrait" | "landscape"
+  staple         Boolean @default(false)
+  spiralBinding  Boolean @default(false)
+  lamination     Boolean @default(false)
+  bondPaper      Boolean @default(false)
+  customServices SelectedService[]
+}
+
+// ---------- Order Item Composite Type ----------
+type OrderItem {
+  fileId       String
+  fileName     String
+  pages        Int
+  printOptions PrintOptions
+  price        Float
+  fileData     String? // Base64 string of file data
+}
+
+// ---------- Order Model ----------
+model Order {
+  id                   String      @id @default(auto()) @map("_id") @db.ObjectId
+  orderId              String      @unique // Display Order ID e.g. "ORD-2026-1002"
+  studentId            String      @db.ObjectId
+  studentName          String
+  studentPhone         String
+  shopId               String      @db.ObjectId
+  shopName             String
+  items                OrderItem[]
+  totalPages           Int
+  totalAmount          Float
+  bindingTotal         Float       @default(0)
+  printingTotal        Float
+  status               String      @default("waiting") // "waiting" | "printing" | "ready" | "collected" | "cancelled"
+  queueNumber          Int
+  estimatedWaitMinutes Int
+  paymentStatus        String      @default("pending") // "pending" | "paid" | "failed" | "refunded"
+  paymentMethod        String      @default("upi")     // "upi" | "card" | "netbanking"
+  notes                String?
+  paidAt               DateTime?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  completedAt          DateTime?
+}
