@@ -13,10 +13,15 @@ export async function proxy(request: NextRequest) {
   // Paths requiring different roles
   const isAdminPath = pathname.startsWith('/admin');
   const isShopkeeperPath = pathname.startsWith('/dashboard');
+  
+  const isShopsIndex = pathname === '/shops';
+  const isPrintPage = pathname.startsWith('/shops/') && pathname.endsWith('/print');
   const isStudentPath =
-    pathname.startsWith('/shops') ||
+    isShopsIndex ||
+    isPrintPage ||
     pathname.startsWith('/orders') ||
     pathname.startsWith('/checkout');
+    
   const isAuthPath = pathname.startsWith('/login');
 
   // Verify JWT

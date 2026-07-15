@@ -44,10 +44,8 @@ export interface Shop {
   status: ShopStatus;
   queueLength: number;
   estimatedWaitMinutes: number;
-  operatingHours: {
-    open: string;
-    close: string;
-  };
+  operatingHoursOpen: string;
+  operatingHoursClose: string;
   services: string[];
   pricePerPageBW: number;
   pricePerPageColor: number;
