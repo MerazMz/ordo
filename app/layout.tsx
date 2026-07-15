@@ -1,14 +1,10 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
 import { Providers } from "@/app/components/providers";
 import "./globals.css";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
-  subsets: ["latin"],
-  display: "swap",
-  preload: false,
-});
+const outfit = {
+  variable: "font-sans",
+};
 
 export const metadata: Metadata = {
   title: "Ordo — Smart Print Management",

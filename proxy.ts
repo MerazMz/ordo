@@ -44,21 +44,27 @@ export async function proxy(request: NextRequest) {
   // 2. If trying to access Admin Dashboard but not an admin
   if (isAdminPath) {
     if (!payload || payload.role !== 'admin') {
-      return NextResponse.redirect(new URL('/login', request.url));
+      const redirectUrl = new URL('/login', request.url);
+      redirectUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
   // 3. If trying to access Shopkeeper Dashboard but not a shopkeeper
   if (isShopkeeperPath) {
     if (!payload || payload.role !== 'shopkeeper') {
-      return NextResponse.redirect(new URL('/login', request.url));
+      const redirectUrl = new URL('/login', request.url);
+      redirectUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
   // 4. If trying to access Student paths but not authenticated
   if (isStudentPath) {
     if (!payload) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      const redirectUrl = new URL('/login', request.url);
+      redirectUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
