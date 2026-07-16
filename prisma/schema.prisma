@@ -48,6 +48,7 @@ model Shop {
   staplePrice          Float    @default(5.0)
   bondPaperPrice       Float    @default(5.0)
   isVerified           Boolean  @default(false)
+  imageUrl             String?
   totalRevenue         Float    @default(0.0)
   totalOrders          Int      @default(0)
   commission           Float    @default(0.0)
@@ -121,6 +122,7 @@ model Order {
   paymentStatus        String      @default("pending") // "pending" | "paid" | "failed" | "refunded"
   paymentMethod        String      @default("upi")     // "upi" | "card" | "netbanking"
   notes                String?
+  cancellationMessage  String?
   paidAt               DateTime?
   createdAt            DateTime    @default(now())
   updatedAt            DateTime    @updatedAt

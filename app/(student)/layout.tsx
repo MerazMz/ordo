@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/app/lib/store';
 import { Avatar, Button } from '@/app/components/ui';
+import NotificationBell from '@/app/components/NotificationBell';
+import MobileNavbar from '@/app/components/mobile/MobileNavbar';
 import {
   PrinterIcon,
   SunIcon,
@@ -65,10 +67,12 @@ export default function StudentLayout({
     return <div className="min-h-screen bg-[var(--background)]">{children}</div>;
   }
 
+  const showTopNav = !(pathname.startsWith('/shops/') && pathname.split('/').length >= 3) && !pathname.startsWith('/orders');
+
   return (
     <div className="min-h-screen bg-[var(--background)]">
       {/* Top Navbar */}
-      <nav className="sticky top-0 z-50 glass border-b border-[var(--border-subtle)]">
+      <nav className={`sticky top-0 z-50 glass border-b border-[var(--border-subtle)] ${showTopNav ? 'block' : 'hidden md:block'}`}>
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
@@ -100,21 +104,19 @@ export default function StudentLayout({
           <div className="flex items-center gap-2">
             <button
               onClick={toggleTheme}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+              className="hidden md:flex w-8 h-8 rounded-lg items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
               aria-label="Toggle theme"
             >
               {theme === 'light' ? <MoonIcon size={16} /> : <SunIcon size={16} />}
             </button>
 
-            <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer">
-              <BellIcon size={16} />
-            </button>
+            <NotificationBell />
 
-            <div className="w-px h-5 bg-[var(--border)] mx-1" />
+            <div className="hidden md:block w-px h-5 bg-[var(--border)] mx-1" />
 
             {user ? (
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
+                <div className="hidden md:flex items-center gap-2">
                   <Avatar name={user.name} size="sm" />
                   <span className="hidden md:block text-sm font-medium text-[var(--text-primary)]">
                     {user.name}
@@ -122,7 +124,7 @@ export default function StudentLayout({
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--error-bg)] hover:text-[var(--error)] transition-colors cursor-pointer"
+                  className="hidden md:flex w-8 h-8 rounded-lg items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--error-bg)] hover:text-[var(--error)] transition-colors cursor-pointer"
                   title="Sign Out"
                 >
                   <LogOutIcon size={16} />
@@ -138,7 +140,10 @@ export default function StudentLayout({
       </nav>
 
       {/* Main Content */}
-      <main>{children}</main>
+      <main className="pb-20 md:pb-0">{children}</main>
+
+      {/* Mobile Bottom Navbar */}
+      <MobileNavbar />
     </div>
   );
 }

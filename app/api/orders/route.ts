@@ -48,10 +48,23 @@ export async function GET() {
       });
     }
 
+    // Resolve shop addresses
+    const shopIds = Array.from(new Set(orders.map((o) => o.shopId)));
+    const shops = await prisma.shop.findMany({
+      where: { id: { in: shopIds } },
+      select: { id: true, address: true },
+    });
+    const shopAddressMap = Object.fromEntries(shops.map((s) => [s.id, s.address]));
+
+    const ordersWithAddress = orders.map((order) => ({
+      ...order,
+      shopAddress: shopAddressMap[order.shopId] || 'Campus Hub',
+    }));
+
     return NextResponse.json({
       success: true,
-      data: orders,
-      count: orders.length,
+      data: ordersWithAddress,
+      count: ordersWithAddress.length,
     });
   } catch (error: any) {
     console.error('Error fetching orders:', error);
@@ -209,8 +222,15 @@ export async function POST(request: Request) {
     // @ts-ignore
     const io = global.io;
     if (io) {
-      io.to(`shop:${shop.id}`).emit('queue-update');
-      io.to(`student:${student.id}`).emit('student-order-update');
+      io.to(`shop:${shop.id}`).emit('queue-update', {
+        message: `New order placed by ${student.name}.`
+      });
+      io.to(`student:${student.id}`).emit('student-order-update', {
+        orderId: order.id,
+        status: order.status,
+        shopName: shop.name,
+        message: `Your print order at ${shop.name} has been placed successfully.`
+      });
     }
 
     return NextResponse.json({

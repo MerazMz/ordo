@@ -84,7 +84,7 @@ export async function PATCH(
   try {
     const { orderId } = await ctx.params;
     const body = await request.json();
-    const { status } = body;
+    const { status, message } = body;
 
     const cookieStore = await cookies();
     const token = cookieStore.get('ordo-token')?.value;
@@ -126,7 +126,8 @@ export async function PATCH(
       where: { id: order.id },
       data: {
         status,
-        completedAt: status === 'collected' ? new Date() : order.completedAt,
+        cancellationMessage: status === 'cancelled' ? (message || 'Order cancelled by shopkeeper') : order.cancellationMessage,
+        completedAt: (status === 'collected' || status === 'cancelled') ? new Date() : order.completedAt,
         paymentStatus: status === 'collected' ? 'paid' : order.paymentStatus,
         paidAt: (status === 'collected' && !order.paidAt) ? new Date() : order.paidAt,
         updatedAt: new Date(),
@@ -134,7 +135,7 @@ export async function PATCH(
     });
 
     // Update Shop queue statistics depending on transition
-    if (status === 'collected' && oldStatus !== 'collected') {
+    if ((status === 'collected' || status === 'cancelled') && (oldStatus === 'waiting' || oldStatus === 'printing')) {
       const activeOrdersCount = await prisma.order.count({
         where: {
           shopId: order.shopId,
@@ -155,10 +156,23 @@ export async function PATCH(
     // @ts-ignore
     const io = global.io;
     if (io) {
+      let statusText = status;
+      if (status === 'accepted') statusText = 'accepted & queued';
+      else if (status === 'ready') statusText = 'ready for pickup';
+      
+      const msg = `Your order from ${order.shopName} is now ${statusText}.`;
+
       io.to(`order:${order.id}`).emit('status-update', { status });
       io.to(`order:${order.orderId}`).emit('status-update', { status });
-      io.to(`shop:${order.shopId}`).emit('queue-update');
-      io.to(`student:${order.studentId}`).emit('student-order-update');
+      io.to(`shop:${order.shopId}`).emit('queue-update', {
+        message: `Order #${order.orderId.slice(-6)} status updated to ${statusText}.`
+      });
+      io.to(`student:${order.studentId}`).emit('student-order-update', {
+        orderId: order.id,
+        status: status,
+        shopName: order.shopName,
+        message: msg
+      });
     }
 
     return NextResponse.json({

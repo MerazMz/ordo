@@ -76,6 +76,7 @@ export async function PATCH(
       operatingHoursClose,
       disabledServices,
       customServices,
+      imageUrl,
     } = body;
 
     const updated = await prisma.shop.update({
@@ -96,6 +97,7 @@ export async function PATCH(
         operatingHoursClose: operatingHoursClose !== undefined ? operatingHoursClose : shop.operatingHoursClose,
         disabledServices: disabledServices !== undefined ? disabledServices : shop.disabledServices,
         customServices: customServices !== undefined ? customServices : shop.customServices,
+        imageUrl: imageUrl !== undefined ? imageUrl : shop.imageUrl,
       },
     });
 

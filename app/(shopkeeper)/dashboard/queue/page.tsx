@@ -20,6 +20,10 @@ export default function QueuePage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  
+  // Cancellation state
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [cancelMessage, setCancelMessage] = useState('');
 
   const loadQueue = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -129,12 +133,12 @@ export default function QueuePage() {
     document.body.removeChild(link);
   };
 
-  const updateStatus = async (orderId: string, newStatus: OrderStatus) => {
+  const updateStatus = async (orderId: string, newStatus: OrderStatus, message?: string) => {
     // 1. Optimistic Update (Immediate UI response)
     let rollbackOrders = orders;
     setOrders((prev) => {
       rollbackOrders = prev;
-      if (newStatus === 'collected') {
+      if (newStatus === 'collected' || newStatus === 'cancelled') {
         return prev.filter((o) => o.id !== orderId);
       } else {
         return prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o));
@@ -146,7 +150,7 @@ export default function QueuePage() {
       const response = await fetch(`/api/orders/${orderId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({ status: newStatus, message }),
       });
       const data = await response.json();
       if (!response.ok || !data.success) {
@@ -314,10 +318,61 @@ export default function QueuePage() {
                       Mark Collected
                     </Button>
                   )}
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => setCancellingOrderId(item.id)}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200 dark:border-red-900/30 dark:hover:bg-red-900/20 cursor-pointer"
+                  >
+                    Cancel
+                  </Button>
                 </div>
               </div>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* Cancellation Modal */}
+      {cancellingOrderId && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-md animate-fade-in p-4">
+          <Card className="max-w-md w-full p-6 space-y-4 shadow-xl border border-[var(--border-subtle)] bg-[var(--surface)] text-left animate-scale-in">
+            <div>
+              <h3 className="text-lg font-bold text-[var(--text-primary)]">Cancel Order</h3>
+              <p className="text-xs text-[var(--text-secondary)] mt-1">Please provide a reason explaining why this order is cancelled. This will be displayed to the student.</p>
+            </div>
+            <textarea
+              className="w-full p-3 text-sm rounded-xl border border-[var(--border-subtle)] bg-[var(--background)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--text-primary)] transition-all resize-none"
+              rows={3}
+              placeholder="e.g. Out of toner ink, double-sided printer issues, shop closing early..."
+              value={cancelMessage}
+              onChange={(e) => setCancelMessage(e.target.value)}
+            />
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setCancellingOrderId(null);
+                  setCancelMessage('');
+                }}
+              >
+                Go Back
+              </Button>
+              <Button
+                disabled={!cancelMessage.trim()}
+                onClick={() => {
+                  const oId = cancellingOrderId;
+                  const msg = cancelMessage.trim();
+                  setCancellingOrderId(null);
+                  setCancelMessage('');
+                  updateStatus(oId, 'cancelled', msg);
+                }}
+                className="bg-red-600 hover:bg-red-700 text-white border-none"
+              >
+                Confirm Cancellation
+              </Button>
+            </div>
+          </Card>
         </div>
       )}
     </div>

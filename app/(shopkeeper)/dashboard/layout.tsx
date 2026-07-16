@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/app/lib/store';
 import { Avatar, Badge } from '@/app/components/ui';
+import NotificationBell from '@/app/components/NotificationBell';
 import {
   PrinterIcon,
   DashboardIcon,
@@ -186,9 +187,7 @@ export default function ShopkeeperLayout({
           <div className="hidden lg:block" />
 
           <div className="flex items-center gap-2">
-            <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer">
-              <BellIcon size={16} />
-            </button>
+            <NotificationBell />
             <div className="w-px h-5 bg-[var(--border)] mx-1" />
             <div className="flex items-center gap-2">
               {user && (

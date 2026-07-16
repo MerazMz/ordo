@@ -62,6 +62,7 @@ export interface Shop {
   }[];
   isVerified: boolean;
   image?: string;
+  imageUrl?: string | null;
   totalRevenue: number;
   totalOrders: number;
   commission: number;
@@ -145,6 +146,7 @@ export interface Order {
   paymentStatus: PaymentStatus;
   paymentMethod: PaymentMethod;
   notes?: string;
+  cancellationMessage?: string;
   paidAt?: string;
   createdAt: string;
   updatedAt: string;

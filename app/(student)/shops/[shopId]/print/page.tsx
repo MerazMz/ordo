@@ -23,6 +23,7 @@ import { calculateFilePrintingCost, calculateExtras, getPrintDescription, getExt
 import type { PrintOptions, PrintColor, PrintSide, PaperSize, Orientation, Shop } from '@/app/lib/types';
 import { useUpload } from '@/app/lib/store';
 import ShopQRModal from '@/app/components/ShopQRModal';
+import MobilePrintFlow from '@/app/components/mobile/MobilePrintFlow';
 
 interface LocalFile {
   id: string;
@@ -203,7 +204,58 @@ export default function ShopPrintPage() {
 
   const selectedFile = files.find((f) => f.id === selectedFileId);
 
+  // Mobile order placement handler
+  const handleMobilePlaceOrder = async (mobileFiles: any[], notes: string) => {
+    try {
+      const totalPages = mobileFiles.reduce((sum: number, f: any) => sum + f.pages, 0);
+      const printingTotal = mobileFiles.reduce((sum: number, f: any) => sum + calculateFilePrintingCost(f.pages, f.printOptions, shop!), 0);
+      const bindingTotal = mobileFiles.reduce((sum: number, f: any) => sum + calculateExtras(f.printOptions, shop!), 0);
+      const grandTotal = printingTotal + bindingTotal;
+
+      const payload = {
+        shopId,
+        items: mobileFiles.map((f: any) => ({
+          fileId: f.id,
+          fileName: f.name,
+          pages: f.pages,
+          price: calculateFilePrintingCost(f.pages, f.printOptions, shop!) + calculateExtras(f.printOptions, shop!),
+          printOptions: f.printOptions,
+          fileData: f.fileData,
+        })),
+        totalPages,
+        totalAmount: grandTotal,
+        bindingTotal,
+        printingTotal,
+        paymentMethod: 'counter',
+        notes,
+      };
+
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) throw new Error(data.error || 'Failed to place order');
+
+      const order = data.data;
+      router.push(`/checkout/success?orderId=${order.orderId}&queue=${order.queueNumber}&wait=${order.estimatedWaitMinutes}&shop=${encodeURIComponent(shop!.name)}`);
+    } catch (err: any) {
+      alert(err.message || 'An error occurred while creating your order.');
+      throw err;
+    }
+  };
+
   return (
+    <>
+      {/* Mobile View */}
+      <div className="md:hidden">
+        <MobilePrintFlow shop={shop} shopId={shopId} onPlaceOrder={handleMobilePlaceOrder} />
+      </div>
+
+      {/* Desktop View */}
+      <div className="hidden md:block">
     <div className="max-w-7xl mx-auto px-6 py-6">
       {/* Back + Shop Info */}
       <div className="flex items-center gap-4 mb-6 animate-fade-in">
@@ -822,5 +874,7 @@ export default function ShopPrintPage() {
       </div>
       <ShopQRModal isOpen={showQRModal} onClose={() => setShowQRModal(false)} shop={shop} hideDownload={true} />
     </div>
+      </div>
+    </>
   );
 }

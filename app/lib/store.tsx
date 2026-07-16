@@ -179,6 +179,29 @@ const NotificationContext = createContext<NotificationContextType>({
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('ordo-notifications');
+      if (saved) {
+        try {
+          setNotifications(JSON.parse(saved));
+        } catch (e) {
+          console.error('Failed to parse notifications:', e);
+        }
+      }
+      setIsLoaded(true);
+    }
+  }, []);
+
+  // Sync to localStorage when notifications change
+  useEffect(() => {
+    if (isLoaded && typeof window !== 'undefined') {
+      localStorage.setItem('ordo-notifications', JSON.stringify(notifications));
+    }
+  }, [notifications, isLoaded]);
 
   const addNotification = useCallback(
     (notification: Omit<Notification, 'id' | 'read' | 'createdAt'>) => {
