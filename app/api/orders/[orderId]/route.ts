@@ -173,6 +173,14 @@ export async function PATCH(
         shopName: order.shopName,
         message: msg
       });
+      // Notify admin of cancellation
+      if (status === 'cancelled') {
+        io.to('admin').emit('admin-order-cancelled', {
+          orderId: order.orderId,
+          shopName: order.shopName,
+          reason: message || null,
+        });
+      }
     }
 
     return NextResponse.json({

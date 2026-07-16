@@ -52,6 +52,8 @@ export default function NotificationBell() {
         socket.emit('join-student', user.id);
       } else if (user.role === 'shopkeeper' && user.shopId) {
         socket.emit('join-shop', user.shopId);
+      } else if (user.role === 'admin') {
+        socket.emit('join-admin');
       }
     });
     
@@ -69,6 +71,28 @@ export default function NotificationBell() {
           title: 'Queue Update',
           message: data.message,
           type: 'success'
+        });
+      }
+    });
+
+    // Admin: new order placed
+    socket.on('admin-new-order', (data: any) => {
+      if (user.role === 'admin') {
+        addNotification({
+          title: 'New Order Placed',
+          message: `${data?.studentName || 'A student'} placed an order at ${data?.shopName || 'a shop'} — ${data?.orderId || ''}`,
+          type: 'info'
+        });
+      }
+    });
+
+    // Admin: order cancelled
+    socket.on('admin-order-cancelled', (data: any) => {
+      if (user.role === 'admin') {
+        addNotification({
+          title: 'Order Cancelled',
+          message: `Order ${data?.orderId || ''} at ${data?.shopName || 'a shop'} was cancelled${data?.reason ? ': ' + data.reason : '.'}`,
+          type: 'error'
         });
       }
     });

@@ -55,6 +55,8 @@ export async function POST(request: Request) {
       laminationPrice,
       staplePrice,
       bondPaperPrice,
+      customServices,
+      disabledServices,
     } = body;
 
     // Validate fields
@@ -118,8 +120,8 @@ export async function POST(request: Request) {
         bondPaperPrice: bondPaperPrice ? parseFloat(bondPaperPrice) : 5,
         operatingHoursOpen: '08:00',
         operatingHoursClose: '20:00',
-        disabledServices: [],
-        customServices: [],
+        disabledServices: disabledServices || [],
+        customServices: customServices || [],
       },
     });
 

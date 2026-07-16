@@ -41,6 +41,12 @@ app.prepare().then(() => {
       console.log(`Socket ${socket.id} joined student updates room: ${studentId}`);
     });
 
+    // Join admin broadcast room
+    socket.on('join-admin', () => {
+      socket.join('admin');
+      console.log(`Socket ${socket.id} joined admin room`);
+    });
+
     socket.on('disconnect', () => {
       console.log('Realtime client disconnected:', socket.id);
     });

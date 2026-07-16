@@ -17,12 +17,12 @@ import {
   SupportIcon,
   SunIcon,
   MoonIcon,
-  BellIcon,
   MenuIcon,
   XIcon,
   LogOutIcon,
 } from '@/app/components/icons';
 import { cn } from '@/app/lib/utils';
+import NotificationBell from '@/app/components/NotificationBell';
 
 const sidebarLinks = [
   { href: '/admin', label: 'Overview', icon: DashboardIcon },
@@ -127,10 +127,7 @@ export default function AdminLayout({
           </button>
           <div className="hidden lg:block" />
           <div className="flex items-center gap-2">
-            <button className="relative w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-secondary)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer">
-              <BellIcon size={16} />
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-[var(--error)] text-white text-[10px] font-medium flex items-center justify-center">3</span>
-            </button>
+            <NotificationBell />
             <div className="w-px h-5 bg-[var(--border)] mx-1" />
             <Avatar name="Admin User" size="sm" />
             <span className="hidden md:block text-sm font-medium text-[var(--text-primary)]">Admin</span>

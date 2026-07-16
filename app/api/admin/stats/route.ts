@@ -50,10 +50,12 @@ export async function GET() {
       data: {
         totalShops,
         totalStudents,
+        totalOrders: orders.length,
         todayOrders: todayOrders.length,
         todayRevenue,
         platformRevenue,
         commissionEarned,
+        totalPagesPrinted: orders.reduce((sum, o) => sum + (o.totalPages || 0), 0),
         recentOrders: orders.slice(0, 10),
         topShops: shops.map((s) => ({
           shopId: s.id,

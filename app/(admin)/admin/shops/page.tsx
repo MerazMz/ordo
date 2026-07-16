@@ -33,6 +33,11 @@ export default function AdminShopsPage() {
   const [newServiceName, setNewServiceName] = useState('');
   const [newServicePrice, setNewServicePrice] = useState('');
 
+  // Add Modal Custom Services States
+  const [addCustomServices, setAddCustomServices] = useState<{ id: string; name: string; price: number }[]>([]);
+  const [addServiceName, setAddServiceName] = useState('');
+  const [addServicePrice, setAddServicePrice] = useState('');
+
   // Form states
   const [shopName, setShopName] = useState('');
   const [address, setAddress] = useState('');
@@ -92,6 +97,7 @@ export default function AdminShopsPage() {
           laminationPrice,
           staplePrice,
           bondPaperPrice,
+          customServices: addCustomServices,
         }),
       });
 
@@ -113,6 +119,7 @@ export default function AdminShopsPage() {
       setOwnerEmail('');
       setOwnerPassword('');
       setOwnerPhone('');
+      setAddCustomServices([]);
     } catch (err: any) {
       setError(err.message || 'An error occurred.');
     } finally {
@@ -193,6 +200,24 @@ export default function AdminShopsPage() {
   const handleRemoveCustomService = (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     setEditCustomServices(editCustomServices.filter((s) => s.id !== id));
+  };
+
+  const handleAddCustomServiceForCreate = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!addServiceName || !addServicePrice) return;
+    const newService = {
+      id: Math.random().toString(36).substring(2, 9),
+      name: addServiceName,
+      price: parseFloat(addServicePrice) || 0,
+    };
+    setAddCustomServices([...addCustomServices, newService]);
+    setAddServiceName('');
+    setAddServicePrice('');
+  };
+
+  const handleRemoveCustomServiceForCreate = (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    setAddCustomServices(addCustomServices.filter((s) => s.id !== id));
   };
 
   return (
@@ -339,7 +364,66 @@ export default function AdminShopsPage() {
                 </div>
               </div>
 
-              <div className="pt-4 flex justify-end gap-3">
+              {/* Custom Services Section */}
+              <div className="space-y-3 pt-2 border-t border-[var(--border-subtle)] text-left">
+                <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] font-semibold mb-2">Custom Services / Additional Pricing (₹)</p>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {addCustomServices.length === 0 ? (
+                    <p className="text-xs text-[var(--text-muted)] italic text-center py-2 bg-[var(--surface-hover)] rounded-xl border border-[var(--border-subtle)]">No custom services added yet.</p>
+                  ) : (
+                    addCustomServices.map((service) => (
+                      <div key={service.id} className="flex items-center justify-between p-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--surface-hover)]">
+                        <div className="text-left">
+                          <p className="text-xs font-semibold text-[var(--text-primary)]">{service.name}</p>
+                          <p className="text-[10px] text-[var(--text-muted)]">Price: ₹{service.price}</p>
+                        </div>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={(e) => handleRemoveCustomServiceForCreate(service.id, e)}
+                          className="text-[var(--error)] hover:bg-[var(--error-bg)] cursor-pointer"
+                          type="button"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Inline form to add service */}
+                <div className="p-3 rounded-lg border border-dashed border-[var(--border)] space-y-2 bg-[var(--background)]">
+                  <p className="text-[10px] font-bold text-[var(--text-secondary)] uppercase">Add Custom Service / Extra Price Option</p>
+                  <div className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="e.g. Glossy Paper Print"
+                        value={addServiceName}
+                        onChange={(e) => setAddServiceName(e.target.value)}
+                      />
+                    </div>
+                    <div className="w-20">
+                      <Input
+                        type="number"
+                        step="0.1"
+                        placeholder="10.0"
+                        value={addServicePrice}
+                        onChange={(e) => setAddServicePrice(e.target.value)}
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={handleAddCustomServiceForCreate}
+                      disabled={!addServiceName || !addServicePrice}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3 border-t border-[var(--border-subtle)]">
                 <Button variant="secondary" onClick={() => setIsModalOpen(false)} type="button">Cancel</Button>
                 <Button type="submit" loading={saving}>Save Shop</Button>
               </div>

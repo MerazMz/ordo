@@ -9,10 +9,12 @@ import type { Order } from '@/app/lib/types';
 interface StatsData {
   totalShops: number;
   totalStudents: number;
+  totalOrders: number;
   todayOrders: number;
   todayRevenue: number;
   platformRevenue: number;
   commissionEarned: number;
+  totalPagesPrinted: number;
   recentOrders: Order[];
   topShops: {
     shopId: string;
@@ -61,7 +63,6 @@ export default function AdminAnalyticsPage() {
   }
 
   const maxRevenue = Math.max(...stats.topShops.map((s) => s.totalRevenue), 1);
-  const totalPagesPrinted = stats.recentOrders.reduce((sum, o) => sum + o.totalPages, 0);
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -72,9 +73,9 @@ export default function AdminAnalyticsPage() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 stagger-children">
         <StatCard title="Monthly Revenue" value={formatCurrency(stats.commissionEarned)} icon={<PaymentIcon size={18} />} />
-        <StatCard title="Total Orders" value={formatNumber(stats.recentOrders.length)} icon={<AnalyticsIcon size={18} />} />
+        <StatCard title="Total Orders" value={formatNumber(stats.totalOrders)} icon={<AnalyticsIcon size={18} />} />
         <StatCard title="Active Shops" value={stats.totalShops} icon={<ShopIcon size={18} />} />
-        <StatCard title="Pages Printed" value={totalPagesPrinted} icon={<PrinterIcon size={18} />} />
+        <StatCard title="Pages Printed" value={formatNumber(stats.totalPagesPrinted)} icon={<PrinterIcon size={18} />} />
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">

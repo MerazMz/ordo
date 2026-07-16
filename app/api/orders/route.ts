@@ -231,6 +231,12 @@ export async function POST(request: Request) {
         shopName: shop.name,
         message: `Your print order at ${shop.name} has been placed successfully.`
       });
+      // Notify admin room
+      io.to('admin').emit('admin-new-order', {
+        orderId: order.orderId,
+        studentName: student.name,
+        shopName: shop.name,
+      });
     }
 
     return NextResponse.json({
